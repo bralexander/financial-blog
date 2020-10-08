@@ -2,6 +2,53 @@ import Head from 'next/head'
 import Parser from 'rss-parser'
 import Link from 'next/link'
 
+export async function getStaticProps(context) {
+
+  const Airtable = require('airtable')
+  const base = new Airtable({ apiKey: process.env.APIKEY }).base(
+    'appH0IUB8IRkQcZKg'
+  )
+  
+  const records = await base('Table 1').select({
+    view: 'Grid view',
+  }).firstPage() //only get first page, and limit to 100 results
+
+  const feeds = records.filter((record) => {
+    if (record.get('approved') === true) return true
+  }).map((record) => {
+    return {
+      id: record.id,
+      name: record.get('name'),
+      blogurl: record.get('blogurl'),
+      feedurl: record.get('feedurl'),
+    }
+  })
+  
+  //const parser = new Parser()
+  //const data = await parser.parseURL('https://flaviocopes.com/index.xml')
+
+  const posts = []
+
+  for (const feed of feeds) {
+    const data = await parser.parsedURL(feed.feedurl)
+  
+    data.items.slice(0, 10).forEach((item) => {
+      posts.push({
+        title: item.title,
+        link: item.link,
+        date: item.isoDate,
+        name: 'Flavio Copes'
+    })
+  })
+}
+
+  return {
+    props: {
+      posts
+    }
+  }
+}
+
 const Home = (props) => (
   <div>
     <Head>
@@ -87,26 +134,6 @@ const Home = (props) => (
     </div>
   </div>
 )
-export async function getStaticProps(context) {
-  const parser = new Parser()
 
-  const data = await parser.parseURL('https://flaviocopes.com/index.xml')
-
-  const posts = []
-  data.items.slice(0, 10).forEach((item) => {
-    posts.push({
-      title: item.title,
-      link: item.link,
-      date: item.isoDate,
-      name: 'Flavio Copes'
-    })
-  })
-
-  return {
-    props: {
-      posts
-    }
-  }
-}
 
 export default Home
