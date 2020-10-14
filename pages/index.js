@@ -24,13 +24,13 @@ export async function getStaticProps(context) {
     }
   })
   
-  //const parser = new Parser()
+  const parser = new Parser()
   //const data = await parser.parseURL('https://flaviocopes.com/index.xml')
 
   const posts = []
 
   for (const feed of feeds) {
-    const data = await parser.parsedURL(feed.feedurl)
+    const data = await parser.parseURL(feed.feedurl)
   
     data.items.slice(0, 10).forEach((item) => {
       posts.push({
